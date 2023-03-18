@@ -1,0 +1,82 @@
+import pandas as pd
+import textstat
+import random
+
+def asking_category() -> str:
+    input_letter = input()
+
+    if input_letter == 'A':
+        return 'news'
+
+    elif input_letter == 'B':
+        return 'sport'
+
+    elif input_letter == 'C':
+        return 'politics'
+
+    elif input_letter == 'D':
+        return 'health'
+
+    elif input_letter == 'E':
+        return 'business'
+
+
+def asking_age() -> str:
+    return input()
+
+# Accessing the file
+df = pd.read_csv('articles.csv')
+
+# Prompt the user to enter the category of news articles they want
+print('Hello, which category of news articles are you looking for?')
+print('A: News, B: Sport, C: Politics, D: Health, E: Business')
+input_category = asking_category()
+while input_category not in ['news', 'sport', 'politics', 'health', 'business']:
+    print('Please enter the correct letter from A to E: ')
+    input_category = asking_category()
+# Prompt the user to enter the targeted readers age group
+print('Who is the targeted reader?')
+print('A: Elementary School, B: Middle School, C: High School, D: Post-Secondary')
+input_age = asking_age()
+while input_age not in ['A', 'B', 'C', 'D']:
+    print('Please enter the correct letter from A to E: ')
+    input_age = asking_age()
+
+# Filter out the category of articles that we don't need
+filtered_df = df[df['Category'] == input_category]
+
+text_list = []
+for index, row in filtered_df.iterrows():
+    text_list.append([row['Index'], str(row['Article text']),
+                      textstat.textstat.dale_chall_readability_score(str(row['Article text'])), str(row['Headline']), str(row['Url'])])
+
+# sorting out the articles within the score range
+selected_articles = []
+if input_age == 'A':
+    for text in text_list:
+        if text[2] < 6.0:
+            selected_articles.append({text[3]: text[4]})
+
+elif input_age == 'B':
+    for text in text_list:
+        if 6.0 <= text[2] < 7.0:
+            selected_articles.append({text[3]: text[4]})
+
+elif input_age == 'C':
+    for text in text_list:
+        if 7.0 <= text[2] < 9.0:
+            selected_articles.append({text[3]: text[4]})
+
+else:
+    for text in text_list:
+        selected_articles.append({text[3]: text[4]})
+
+if selected_articles == []:
+    print("Oops, there is no article that satistisfies the criteria...")
+
+else:
+    # randomly choose to return 5
+    for i in range(0, 5):
+        chosen_article = random.choice(selected_articles)
+        selected_articles.remove(chosen_article)
+        print(chosen_article)
