@@ -1,6 +1,7 @@
 import pandas as pd
 import textstat
 import random
+import webbrowser
 
 def asking_category() -> str:
     input_letter = input()
@@ -25,15 +26,16 @@ def asking_age() -> str:
     return input()
 
 # Accessing the file
-df = pd.read_csv('articles.csv')
+df = pd.read_csv('CNN_Articels_clean.csv')
 
 # Prompt the user to enter the category of news articles they want
-print('Hello, which category of news articles are you looking for?')
+print('Hello READy user! :) Which category of news articles are you looking for?')
 print('A: News, B: Sport, C: Politics, D: Health, E: Business')
 input_category = asking_category()
 while input_category not in ['news', 'sport', 'politics', 'health', 'business']:
     print('Please enter the correct letter from A to E: ')
     input_category = asking_category()
+
 # Prompt the user to enter the targeted readers age group
 print('Who is the targeted reader?')
 print('A: Elementary School, B: Middle School, C: High School, D: Post-Secondary')
@@ -47,36 +49,44 @@ filtered_df = df[df['Category'] == input_category]
 
 text_list = []
 for index, row in filtered_df.iterrows():
-    text_list.append([row['Index'], str(row['Article text']),
-                      textstat.textstat.dale_chall_readability_score(str(row['Article text'])), str(row['Headline']), str(row['Url'])])
-
+    text_list.append([str(row['Article text']),
+                      textstat.textstat.dale_chall_readability_score(str(row['Article text'])),
+                      str(row['Headline']),
+                      str(row['Url'])])
 # sorting out the articles within the score range
 selected_articles = []
 if input_age == 'A':
     for text in text_list:
-        if text[2] < 6.0:
-            selected_articles.append({text[3]: text[4]})
+        if text[1] < 6.0:
+            selected_articles.append({text[2]: text[3]})
 
 elif input_age == 'B':
     for text in text_list:
-        if 6.0 <= text[2] < 7.0:
-            selected_articles.append({text[3]: text[4]})
+        if 6.0 <= text[1] < 7.0:
+            selected_articles.append({text[2]: text[3]})
 
 elif input_age == 'C':
     for text in text_list:
-        if 7.0 <= text[2] < 9.0:
-            selected_articles.append({text[3]: text[4]})
+        if 7.0 <= text[1] < 9.0:
+            selected_articles.append({text[2]: text[3]})
 
 else:
     for text in text_list:
-        selected_articles.append({text[3]: text[4]})
+        selected_articles.append({text[2]: text[3]})
+
 
 if selected_articles == []:
-    print("Oops, there is no article that satistisfies the criteria...")
+    print("Oops, there is no article that satisfies the criteria...")
 
 else:
     # randomly choose to return 5
     for i in range(0, 5):
-        chosen_article = random.choice(selected_articles)
-        selected_articles.remove(chosen_article)
-        print(chosen_article)
+        if len(selected_articles) <= 0:
+            break
+        else:
+            chosen_article = random.choice(selected_articles)
+            selected_articles.remove(chosen_article)
+            url = list(chosen_article.values())[0]
+            popup_code = f"""<script>window.open('{url}', '_blank');</script>"""
+            print(popup_code)
+            webbrowser.open_new_tab(url)
